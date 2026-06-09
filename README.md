@@ -1,22 +1,36 @@
-# Tarea2
-Tarea 2, Taller de Redes y Servicios
+# Servidor
 
-# Server
+1. Construir contenedor
 
-Crear contenedor
-
+```bash
 docker build -t amqp_server .
+```
 
-Iniciar contenedor
+2. Ejecutar servidor RabbitMQ
 
+```bash
 docker run -it --rm --name rabbit_server -p 5672:5672 -p 15672:15672 amqp_server
+```
 
-# Client
+# Cliente
 
-Crear contenedor
+1. Construir contenedor
 
+```bash
 docker build -t amqp_client .
+```
 
-Entrar en terminal del contenedor
+2. Crear dos terminales y entrar a la terminal del contenedor en ambas terminales
 
+```bash
 docker run -it --rm --network host amqp_client
+```
+
+3. En una terminal ejecutar el receptor (receiver.py) y en la otra el emisor (send.py)
+
+```bash
+python receive.py
+```
+```bash
+python send.py
+```
