@@ -23,14 +23,14 @@ docker build -t amqp_client .
 2. Crear dos terminales y entrar a la terminal del contenedor en ambas terminales
 
 ```bash
-docker run -it --rm --network host amqp_client
+docker run -it --rm amqp_client
 ```
 
-3. En una terminal ejecutar el receptor (receiver.py) y en la otra el emisor (send.py)
+3. Mediante amqp-tools, en una terminal generar el receptor y en la otra enviar un mensaje.
 
 ```bash
-python receive.py
+amqp-consume -u "amqp://admin:1234@host.docker.internal:5672/entorno_amqp" -q hello -d cat
 ```
 ```bash
-python send.py
+amqp-publish -u "amqp://admin:1234@host.docker.internal:5672/entorno_amqp" -r hello -b "Hola Mundo"
 ```

@@ -1,16 +1,8 @@
-# 1. Usar una imagen oficial de Python ligera
-FROM python:3.10-slim
+# 1. Usar imagen base de Ubuntu
+FROM ubuntu:latest
 
-# 2. Crear una carpeta de trabajo dentro del contenedor
-WORKDIR /app
+# 2. Actualizar el sistema e instalar las herramientas de red AMQP
+RUN apt-get update && apt-get install -y amqp-tools
 
-# 3. Copiar el archivo de requerimientos e instalar la librería Pika
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# 4. Copiar tus scripts de Python al contenedor
-COPY send.py receive.py ./
-
-# 5. Indicar que, al iniciar, nos deje en una terminal interactiva (bash)
-# Esto cumple el Paso 7 de tu rúbrica para el cliente.
+# 3. Iniciar con una terminal interactiva
 CMD ["/bin/bash"]
