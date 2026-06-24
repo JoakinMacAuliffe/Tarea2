@@ -1,0 +1,202 @@
+================================================================================
+ RESULTADOS - Análisis de Tráfico AMQP con Scapy
+ Fecha: 2026-06-23 21:51:39
+ Servidor: 127.0.0.1:5672
+================================================================================
+
+[21:51:15.067] Ejecutando análisis completo...
+
+[21:51:15.068] ======================================================================
+[21:51:15.068] [OBJ1] OBJETIVO 1: Interceptar e inyectar/modificar tráfico AMQP
+[21:51:15.068] ======================================================================
+[21:51:15.068] [CAPTURA] Capturando tráfico AMQP en puerto 5672 por 15s...
+[21:51:15.068] [CAPTURA] Filtro BPF: 'tcp port 5672'
+[21:51:15.068] [CAPTURA] Asegúrese de generar tráfico AMQP (publish/consume) durante la captura.
+[21:51:16.767] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Protocol-Header | AMQP 0.0.9.1
+[21:51:16.768] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Start
+[21:51:16.768] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Start-OK
+[21:51:16.769] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Tune
+[21:51:16.770] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Tune-OK
+[21:51:16.770] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Open
+[21:51:16.770] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Open-OK
+[21:51:16.771] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Channel.Open
+[21:51:16.771] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Channel.Open-OK
+[21:51:16.772] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Queue.Declare
+[21:51:16.777] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Queue.Declare-OK
+[21:51:16.778] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Basic.Consume
+[21:51:16.779] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Basic.Consume-OK
+[21:51:18.861] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Protocol-Header | AMQP 0.0.9.1
+[21:51:18.863] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Start
+[21:51:18.863] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Start-OK
+[21:51:18.864] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Tune
+[21:51:18.865] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Tune-OK
+[21:51:18.865] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Open
+[21:51:18.865] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Open-OK
+[21:51:18.866] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Channel.Open
+[21:51:18.866] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Channel.Open-OK
+[21:51:18.867] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Basic.Publish
+[21:51:18.867] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Content-Header | Header de contenido
+[21:51:18.867] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Content-Body | Body (10 bytes)
+[21:51:18.867] [CAPTURA]     └─ Contenido mensaje: "Hola Mundo"
+[21:51:18.867] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Channel.Close
+[21:51:18.868] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Channel.Close-OK
+[21:51:18.868] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Basic.Deliver
+[21:51:18.868] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Content-Header | Header de contenido
+[21:51:18.868] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Content-Body | Body (10 bytes)
+[21:51:18.868] [CAPTURA]     └─ Contenido mensaje: "Hola Mundo"
+[21:51:18.869] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Close
+[21:51:18.869] [CAPTURA]   [S→C] 127.0.0.1→127.0.0.1 | Tipo: Method | Connection.Close-OK
+[21:51:18.871] [CAPTURA]   [C→S] 127.0.0.1→127.0.0.1 | Tipo: Method | Basic.Ack
+[21:51:30.069] [CAPTURA] 
+Resumen de captura (15s):
+[21:51:30.070] [CAPTURA]   Total paquetes AMQP con payload: 26
+[21:51:30.070] [CAPTURA]   Content-Body: 2
+[21:51:30.070] [CAPTURA]   Content-Header: 2
+[21:51:30.070] [CAPTURA]   Method: 27
+[21:51:30.070] [CAPTURA]   Protocol-Header: 2
+[21:51:30.070] [CAPTURA]   TCP-A: 30
+[21:51:30.070] [CAPTURA]   TCP-FA: 2
+[21:51:30.070] [CAPTURA]   TCP-S: 2
+[21:51:30.070] [CAPTURA]   TCP-SA: 2
+[21:51:30.074] [CAPTURA]   Captura guardada en: C:\Users\jfmac\Dev\Tarea2\captura_amqp.pcapng
+[21:51:30.074] 
+----------------------------------------------------------------------
+[21:51:30.074] [INYECCIÓN] INYECCIÓN 1: Protocol-Header AMQP con versión inválida
+[21:51:30.074] ----------------------------------------------------------------------
+[21:51:30.074] [INYECCIÓN] Enviando header AMQP con versión falsa (9.9.9) al servidor...
+[21:51:30.075] [INYECCIÓN]   Conexión TCP establecida con 127.0.0.1:5672
+[21:51:30.075] [INYECCIÓN]   Enviado header falso: 414d515009090909
+[21:51:30.077] [INYECCIÓN]   Respuesta del servidor (8 bytes): 414d515003010000
+[21:51:30.077] [INYECCIÓN]   → El servidor responde con su versión soportada: AMQP 3.1.0.0
+[21:51:30.077] [INYECCIÓN]   → ANÁLISIS: El servidor rechaza la versión y responde con la versión correcta que soporta (mecanismo de negociación).
+[21:51:30.077] [INYECCIÓN]   Conexión cerrada.
+[21:51:30.077] 
+----------------------------------------------------------------------
+[21:51:30.077] [INYECCIÓN] INYECCIÓN 2: Frame AMQP Method malformado
+[21:51:30.077] ----------------------------------------------------------------------
+[21:51:30.078] [INYECCIÓN]   Enviado Protocol-Header correcto (AMQP 0.0.9.1)
+[21:51:30.079] [INYECCIÓN]   ← Recibido: Connection.Start
+[21:51:30.080] [INYECCIÓN]   Enviado frame malformado: class=255, method=255
+[21:51:30.080] [INYECCIÓN]   → ANÁLISIS: Respuesta inesperada del servidor: 
+[21:51:30.080] 
+----------------------------------------------------------------------
+[21:51:30.080] [INYECCIÓN] INYECCIÓN 3: Datos aleatorios (garbage data) al puerto AMQP
+[21:51:30.081] ----------------------------------------------------------------------
+[21:51:30.081] [INYECCIÓN]   Enviado 16 bytes aleatorios: ff00819122a366a5aa601334b052d08c...
+[21:51:30.082] [INYECCIÓN]   ← Servidor responde con Protocol-Header AMQP (sugiere reconexión con versión correcta)
+[21:51:30.100] [INYECCIÓN]   Enviado 64 bytes aleatorios: 4f65ed5f5301b70828e344c10ca8f54858838a3e...
+[21:51:30.101] [INYECCIÓN]   ← Servidor responde con Protocol-Header AMQP (sugiere reconexión con versión correcta)
+[21:51:30.116] [INYECCIÓN]   Enviado 256 bytes aleatorios: ff65dfe0618244f624fd5693304fb48ba8e52372...
+[21:51:30.116] [INYECCIÓN]   ← Servidor responde con Protocol-Header AMQP (sugiere reconexión con versión correcta)
+[21:51:30.131] [INYECCIÓN]   Enviado 1024 bytes aleatorios: d529ea38172421be6f31789f1ac51af58abdb5bb...
+[21:51:30.132] [INYECCIÓN]   ← Servidor responde con Protocol-Header AMQP (sugiere reconexión con versión correcta)
+[21:51:30.132] [INYECCIÓN]   → ANÁLISIS: El servidor RabbitMQ descarta datos que no coinciden con el handshake AMQP esperado. En algunos casos responde con el Protocol-Header correcto, invitando al cliente a reiniciar.
+[21:51:30.133] 
+----------------------------------------------------------------------
+[21:51:30.133] [INYECCIÓN] INYECCIÓN 4: Paquete TCP crafteado con Scapy (SYN + payload AMQP)
+[21:51:30.133] ----------------------------------------------------------------------
+[21:51:30.133] [INYECCIÓN]   Enviando SYN a 127.0.0.1:5672...
+[21:51:30.135] [INYECCIÓN]   ← Respuesta TCP flags: SA
+[21:51:30.135] [INYECCIÓN]   → SYN-ACK recibido: puerto abierto y servicio activo.
+[21:51:30.136] [INYECCIÓN]   → ACK enviado, handshake completo.
+[21:51:30.137] [INYECCIÓN]   → Payload AMQP malformado enviado (20 bytes)
+[21:51:30.138] [INYECCIÓN]   → RST enviado para cerrar conexión.
+[21:51:30.138] [INYECCIÓN]   → ANÁLISIS: Se verifica que se puede completar el handshake TCP y enviar payloads AMQP crafteados. El servidor procesa el header y descarta el frame inválido.
+[21:51:30.138] 
+======================================================================
+[21:51:30.138] [OBJ2] OBJETIVO 2: Análisis de repercusiones del tráfico inyectado
+[21:51:30.138] ======================================================================
+[21:51:30.138] 
+----------------------------------------------------------------------
+[21:51:30.139] [IMPACTO] TEST 1: Flood de conexiones TCP al servicio AMQP
+[21:51:30.139] ----------------------------------------------------------------------
+[21:51:30.459] [IMPACTO]   Conexiones intentadas: 50
+[21:51:30.460] [IMPACTO]   Conexiones exitosas:   50
+[21:51:30.460] [IMPACTO]   Conexiones fallidas:   0
+[21:51:30.460] [IMPACTO]   Tiempo promedio conexión: 6.37 ms
+[21:51:30.460] [IMPACTO]   Tiempo mínimo: 0.16 ms
+[21:51:30.460] [IMPACTO]   Tiempo máximo: 22.70 ms
+[21:51:30.461] [IMPACTO]   Verificando estado del servicio tras el flood...
+[21:51:30.477] [IMPACTO]   ← Servicio responde: Connection.Start
+[21:51:30.477] [IMPACTO]   Tiempo de respuesta post-flood: 15.98 ms
+[21:51:30.477] [IMPACTO]   → ANÁLISIS: El servicio sigue operativo tras el flood. RabbitMQ maneja bien las conexiones múltiples.
+[21:51:30.480] 
+----------------------------------------------------------------------
+[21:51:30.480] [IMPACTO] TEST 2: Handshakes AMQP incompletos (half-open)
+[21:51:30.480] ----------------------------------------------------------------------
+[21:51:30.582] [IMPACTO]   Conexiones half-open creadas: 20
+[21:51:32.586] [IMPACTO]   Servicio respondió en 2.89 ms con 20 half-opens.
+[21:51:32.586] [IMPACTO]   → ANÁLISIS: RabbitMQ tiene timeouts para conexiones inactivas. Las half-open connections son eventualmente limpiadas.
+[21:51:32.588] 
+----------------------------------------------------------------------
+[21:51:32.588] [IMPACTO] TEST 3: Payload AMQP sobredimensionado
+[21:51:32.588] ----------------------------------------------------------------------
+[21:51:32.591] [IMPACTO]   ← Connection.Start
+[21:51:32.591] [IMPACTO]   Enviando frame body sobredimensionado: 65544 bytes
+[21:51:35.593] [IMPACTO]   → ANÁLISIS: RabbitMQ impone un frame_max (por defecto 131072 bytes). Frames que excedan este límite causan cierre de conexión.
+[21:51:35.593] 
+======================================================================
+[21:51:35.594] [OBJ3] OBJETIVO 3: Métricas de red y cotas de desempeño
+[21:51:35.594] ======================================================================
+[21:51:35.594] 
+----------------------------------------------------------------------
+[21:51:35.594] [MÉTRICA] MÉTRICA 1: Latencia del servicio AMQP (TCP + Protocol Handshake)
+[21:51:35.594] ----------------------------------------------------------------------
+[21:51:37.798] [MÉTRICA]   Latencia TCP Connect (20 muestras):
+[21:51:37.799] [MÉTRICA]     Promedio: 7.55 ms
+[21:51:37.799] [MÉTRICA]     Mínimo:   0.35 ms
+[21:51:37.799] [MÉTRICA]     Máximo:   22.34 ms
+[21:51:37.799] [MÉTRICA]   Latencia AMQP Handshake (20 muestras):
+[21:51:37.799] [MÉTRICA]     Promedio: 2.19 ms
+[21:51:37.799] [MÉTRICA]     Mínimo:   1.60 ms
+[21:51:37.799] [MÉTRICA]     Máximo:   2.94 ms
+[21:51:37.800] [MÉTRICA]   → ANÁLISIS: La latencia TCP refleja el overhead de red, mientras que la latencia AMQP incluye procesamiento del servidor para generar Connection.Start.
+[21:51:37.800] 
+----------------------------------------------------------------------
+[21:51:37.800] [MÉTRICA] MÉTRICA 2: Throughput TCP al servicio AMQP
+[21:51:37.800] ----------------------------------------------------------------------
+[21:51:37.822] [MÉTRICA]   Bloque 1024 bytes × 10: 10240 bytes en 0.2 ms (45003.3 KB/s, 368.67 Mbps)
+[21:51:37.824] [MÉTRICA]   Bloque 4096 bytes × 10: 40960 bytes en 0.2 ms (195995.5 KB/s, 1605.60 Mbps)
+[21:51:37.827] [MÉTRICA]   Bloque 16384 bytes × 10: 163840 bytes en 0.3 ms (598118.2 KB/s, 4899.78 Mbps)
+[21:51:37.864] [MÉTRICA]   Bloque 65536 bytes × 10: 655360 bytes en 0.7 ms (962479.2 KB/s, 7884.63 Mbps)
+[21:51:37.864] [MÉTRICA]   → ANÁLISIS: El throughput se ve limitado por la ventana TCP y la respuesta del servidor al recibir datos inesperados.
+[21:51:37.865] 
+----------------------------------------------------------------------
+[21:51:37.865] [MÉTRICA] MÉTRICA 3: Latencia ICMP (ping) al servidor
+[21:51:37.865] ----------------------------------------------------------------------
+[21:51:39.903] [MÉTRICA]   ICMP Ping (10/10 respuestas):
+[21:51:39.903] [MÉTRICA]     Promedio: 3.25 ms
+[21:51:39.904] [MÉTRICA]     Mínimo:   1.46 ms
+[21:51:39.904] [MÉTRICA]     Máximo:   16.16 ms
+[21:51:39.904] [MÉTRICA]   → ANÁLISIS: La latencia ICMP es la línea base de red. La diferencia con la latencia AMQP indica el overhead del protocolo.
+[21:51:39.904] 
+----------------------------------------------------------------------
+[21:51:39.904] [MÉTRICA] MÉTRICA 4: Parámetros TCP negociados con el servidor
+[21:51:39.904] ----------------------------------------------------------------------
+[21:51:39.906] [MÉTRICA]   Window Size (SYN-ACK):  65535
+[21:51:39.906] [MÉTRICA]   Flags:                  SA
+[21:51:39.906] [MÉTRICA]   Opción TCP: MSS = 65495
+[21:51:39.906] [MÉTRICA]   Opción TCP: NOP = None
+[21:51:39.906] [MÉTRICA]   Opción TCP: WScale = 8
+[21:51:39.906] [MÉTRICA]   Seq Number:             4000132208
+[21:51:39.906] [MÉTRICA]   Ack Number:             1
+[21:51:39.906] [MÉTRICA]   → ANÁLISIS: El tamaño de ventana TCP influye directamente en el throughput máximo. Window Scale permite ventanas mayores a 65535 bytes.
+[21:51:39.907] 
+----------------------------------------------------------------------
+[21:51:39.907] [MÉTRICA] MÉTRICA 5: Comportamiento ante fragmentación IP
+[21:51:39.907] ----------------------------------------------------------------------
+[21:51:39.908] [MÉTRICA]   Payload original: 2008 bytes
+[21:51:39.908] [MÉTRICA]   Fragmentos generados: 5
+[21:51:39.908] [MÉTRICA]     Fragmento #1: offset=0, tamaño=496, flags=MF
+[21:51:39.908] [MÉTRICA]     Fragmento #2: offset=62, tamaño=496, flags=MF
+[21:51:39.908] [MÉTRICA]     Fragmento #3: offset=124, tamaño=496, flags=MF
+[21:51:39.908] [MÉTRICA]     Fragmento #4: offset=186, tamaño=496, flags=MF
+[21:51:39.908] [MÉTRICA]     Fragmento #5: offset=248, tamaño=44, flags=Last
+[21:51:39.910] [MÉTRICA]   Fragmentos enviados al servidor.
+[21:51:39.910] [MÉTRICA]   → ANÁLISIS: La fragmentación IP puede causar problemas de reensamblaje y afectar la latencia. Algunos firewalls bloquean fragmentos por seguridad.
+[21:51:39.910] 
+----------------------------------------------------------------------
+[21:51:39.910] [MÉTRICA] MÉTRICA 6: Análisis de capturas PCAP existentes
+[21:51:39.910] ----------------------------------------------------------------------
+[21:51:39.910] [MÉTRICA]   Archivo input.pcapng no encontrado, omitiendo.
+[21:51:39.910] [MÉTRICA]   Archivo output.pcapng no encontrado, omitiendo.
