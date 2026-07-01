@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 # Evita interacciones durante instalación
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update -y && apt-get install curl gnupg apt-transport-https -y
+RUN apt-get update -y && apt-get install curl gnupg apt-transport-https iproute2 -y
 
 ## Team RabbitMQ's signing key
 RUN curl -1sLf "https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA" | gpg --dearmor | tee /usr/share/keyrings/com.rabbitmq.team.gpg > /dev/null

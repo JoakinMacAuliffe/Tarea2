@@ -25,6 +25,13 @@ import os
 from datetime import datetime
 from collections import defaultdict
 
+import subprocess
+import csv
+try:
+    import matplotlib.pyplot as plt
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
 # ── Importación de Scapy ────────────────────────────────────────────────────
 try:
     from scapy.all import (
@@ -508,6 +515,101 @@ def objetivo1_inyeccion_paquete_scapy():
 #  OBJETIVO 2: ANALIZAR REPERCUSIONES DEL TRÁFICO INYECTADO
 # =============================================================================
 
+
+def objetivo1_fuzzing_payload():
+    '''
+    Inyección Fuzzing 1: Envía frames AMQP válidos pero con payloads generados
+    aleatoriamente para evaluar cómo reacciona el parser del servidor.
+    '''
+    log('\n' + '-' * 70)
+    log('INYECCIÓN FUZZING 1: Fuzzing de Payload/Body AMQP', 'INYECCIÓN')
+    log('-' * 70)
+    for tam in [100, 500, 1000]:
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(3)
+            sock.connect((SERVER_IP, AMQP_PORT))
+            sock.send(AMQP_PROTOCOL_HEADER)
+            resp = sock.recv(4096)
+            
+            fuzz_payload = bytes(random.randint(0, 255) for _ in range(tam))
+            frame = struct.pack('!BHI', AMQP_FRAME_BODY, 1, len(fuzz_payload)) + fuzz_payload + bytes([AMQP_FRAME_END])
+            sock.send(frame)
+            log(f'  Enviado frame fuzzeado con {tam} bytes de payload.', 'INYECCIÓN')
+            try:
+                resp2 = sock.recv(4096)
+                log(f'  ← Respuesta: {resp2[:40].hex()}', 'INYECCIÓN')
+            except socket.timeout:
+                log('  ← Sin respuesta tras inyección (posible cierre de conexión).', 'INYECCIÓN')
+            sock.close()
+        except Exception as e:
+            log(f'  ERROR: {e}', 'INYECCIÓN')
+    log('  → ANÁLISIS: Se espera que el servidor RabbitMQ cierre la conexión al recibir frames de Body sin métodos declarados o con datos inválidos.', 'INYECCIÓN')
+
+def objetivo1_fuzzing_campos():
+    '''
+    Inyección Fuzzing 2: Envía frames Method con Class ID y Method ID
+    aleatorios en un bucle para buscar comportamientos anómalos.
+    '''
+    log('\n' + '-' * 70)
+    log('INYECCIÓN FUZZING 2: Fuzzing de Campos AMQP (Class/Method IDs)', 'INYECCIÓN')
+    log('-' * 70)
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(3)
+        sock.connect((SERVER_IP, AMQP_PORT))
+        sock.send(AMQP_PROTOCOL_HEADER)
+        resp = sock.recv(4096)
+        
+        for _ in range(5):
+            c_id = random.randint(0, 200)
+            m_id = random.randint(0, 200)
+            payload = struct.pack('!HH', c_id, m_id) + b'\x00\x00'
+            frame = struct.pack('!BHI', AMQP_FRAME_METHOD, 0, len(payload)) + payload + bytes([AMQP_FRAME_END])
+            sock.send(frame)
+            log(f'  Enviado Method frame con Class={c_id} Method={m_id}.', 'INYECCIÓN')
+            try:
+                resp2 = sock.recv(4096)
+                if b'Connection.Close' in resp2 or resp2:
+                    log('  ← Servidor respondió (probablemente Connection.Close).', 'INYECCIÓN')
+                    break
+            except socket.timeout:
+                pass
+        sock.close()
+    except Exception as e:
+        log(f'  ERROR: {e}', 'INYECCIÓN')
+    log('  → ANÁLISIS: Combinaciones no válidas de Class/Method causan un error de protocolo (Connection.Close) por parte del servidor.', 'INYECCIÓN')
+
+def objetivo1_inyeccion_channel_invalido():
+    '''
+    Modificación 3: Enviar frame con un Channel ID no válido (ej. 9999).
+    '''
+    log('\n' + '-' * 70)
+    log('INYECCIÓN MODIFICADA 3: Channel ID Inválido', 'INYECCIÓN')
+    log('-' * 70)
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(3)
+        sock.connect((SERVER_IP, AMQP_PORT))
+        sock.send(AMQP_PROTOCOL_HEADER)
+        resp = sock.recv(4096)
+        
+        payload = struct.pack('!HH', 20, 10) + b'\x00'
+        frame = struct.pack('!BHI', AMQP_FRAME_METHOD, 9999, len(payload)) + payload + bytes([AMQP_FRAME_END])
+        sock.send(frame)
+        log('  Enviado Channel.Open en canal 9999.', 'INYECCIÓN')
+        
+        try:
+            resp2 = sock.recv(4096)
+            log(f'  ← Respuesta: {resp2[:60].hex()}', 'INYECCIÓN')
+        except socket.timeout:
+            log('  ← Sin respuesta (cierre abrupto).', 'INYECCIÓN')
+        sock.close()
+    except Exception as e:
+        log(f'  ERROR: {e}', 'INYECCIÓN')
+    log('  → ANÁLISIS: Se espera un error de canal (Channel Error) o de conexión (Connection Error) al intentar usar un ID de canal fuera del rango negociado o muy alto.', 'INYECCIÓN')
+
+
 def objetivo2_impacto_flood_conexiones():
     """
     Abre múltiples conexiones TCP simultáneas al servidor AMQP para medir
@@ -983,6 +1085,87 @@ def objetivo3_analisis_pcap_existente():
 #  MENÚ PRINCIPAL
 # =============================================================================
 
+
+def objetivo3_metricas_modificadas():
+    '''
+    Evalúa el throughput del servidor modificando métricas de red mediante tc.
+    Genera gráficos usando matplotlib.
+    '''
+    log('\n' + '-' * 70)
+    log('MÉTRICA 7: Evaluación de Cotas de Desempeño variando Latencia y Pérdida de Paquetes', 'MÉTRICA')
+    log('-' * 70)
+    
+    container_name = 'rabbit_server'
+    
+    def test_throughput():
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(2)
+            sock.connect((SERVER_IP, AMQP_PORT))
+            datos = b'X' * 4096
+            total = 0
+            t0 = time.time()
+            for _ in range(50):
+                total += sock.send(datos)
+            t1 = time.time()
+            sock.close()
+            return (total / 1024) / (t1 - t0)
+        except Exception:
+            return 0
+    
+    latencias = [0, 50, 100, 200, 300, 500]
+    throughput_lat = []
+    for lat in latencias:
+        if lat > 0:
+            subprocess.run(['docker', 'exec', container_name, 'tc', 'qdisc', 'add', 'dev', 'eth0', 'root', 'netem', 'delay', f'{lat}ms'], capture_output=True)
+            time.sleep(1)
+        th = test_throughput()
+        throughput_lat.append(th)
+        log(f'  Latencia {lat}ms -> Throughput: {th:.2f} KB/s', 'MÉTRICA')
+        if lat > 0:
+            subprocess.run(['docker', 'exec', container_name, 'tc', 'qdisc', 'del', 'dev', 'eth0', 'root'], capture_output=True)
+            time.sleep(0.5)
+            
+    perdidas = [0, 5, 10, 20, 30, 50]
+    throughput_loss = []
+    for loss in perdidas:
+        if loss > 0:
+            subprocess.run(['docker', 'exec', container_name, 'tc', 'qdisc', 'add', 'dev', 'eth0', 'root', 'netem', 'loss', f'{loss}%'], capture_output=True)
+            time.sleep(1)
+        th = test_throughput()
+        throughput_loss.append(th)
+        log(f'  Pérdida {loss}% -> Throughput: {th:.2f} KB/s', 'MÉTRICA')
+        if loss > 0:
+            subprocess.run(['docker', 'exec', container_name, 'tc', 'qdisc', 'del', 'dev', 'eth0', 'root'], capture_output=True)
+            time.sleep(0.5)
+
+    if MATPLOTLIB_AVAILABLE:
+        try:
+            plt.figure(figsize=(10,4))
+            
+            plt.subplot(1, 2, 1)
+            plt.plot(latencias, throughput_lat, marker='o', color='blue')
+            plt.title('Throughput vs Latencia')
+            plt.xlabel('Latencia (ms)')
+            plt.ylabel('Throughput (KB/s)')
+            plt.grid(True)
+            
+            plt.subplot(1, 2, 2)
+            plt.plot(perdidas, throughput_loss, marker='o', color='red')
+            plt.title('Throughput vs Pérdida de Paquetes')
+            plt.xlabel('Pérdida de Paquetes (%)')
+            plt.ylabel('Throughput (KB/s)')
+            plt.grid(True)
+            
+            plt.tight_layout()
+            plt.savefig('metricas_throughput.png')
+            log('  Gráfico guardado en metricas_throughput.png', 'MÉTRICA')
+        except Exception as e:
+            log(f'  Error al graficar: {e}', 'MÉTRICA')
+            
+    log('  → ANÁLISIS: Las cotas de desempeño se observan cuando el throughput cae a 0 o la conexión falla sistemáticamente.', 'MÉTRICA')
+
+
 def menu_principal():
     """Muestra el menú principal y ejecuta las opciones seleccionadas."""
     print("\n" + "=" * 70)
@@ -998,6 +1181,7 @@ def menu_principal():
     print("  [6] Solo inyecciones (sin captura)")
     print("  [7] Solo métricas de red")
     print("  [8] Análisis de archivos PCAP existentes")
+    print("  [9] Evaluar Cotas de Desempeño (Requiere Docker y tc)")
     print("  [0] Salir")
     print()
 
@@ -1012,6 +1196,9 @@ def ejecutar_objetivo1():
     objetivo1_inyeccion_frame_malformado()
     objetivo1_inyeccion_datos_aleatorios()
     objetivo1_inyeccion_paquete_scapy()
+    objetivo1_fuzzing_payload()
+    objetivo1_fuzzing_campos()
+    objetivo1_inyeccion_channel_invalido()
 
 
 def ejecutar_objetivo2():
@@ -1029,6 +1216,7 @@ def ejecutar_objetivo3():
     objetivo3_tamano_ventana_tcp()
     objetivo3_fragmentacion()
     objetivo3_analisis_pcap_existente()
+    objetivo3_metricas_modificadas()
 
 
 def main():
@@ -1056,6 +1244,9 @@ def main():
             objetivo1_inyeccion_frame_malformado()
             objetivo1_inyeccion_datos_aleatorios()
             objetivo1_inyeccion_paquete_scapy()
+            objetivo1_fuzzing_payload()
+            objetivo1_fuzzing_campos()
+            objetivo1_inyeccion_channel_invalido()
         elif opcion == "7":
             objetivo3_latencia_servicio()
             objetivo3_throughput_tcp()
@@ -1064,6 +1255,8 @@ def main():
             objetivo3_fragmentacion()
         elif opcion == "8":
             objetivo3_analisis_pcap_existente()
+        elif opcion == "9":
+            objetivo3_metricas_modificadas()
         else:
             print("Opción no válida.")
             continue
