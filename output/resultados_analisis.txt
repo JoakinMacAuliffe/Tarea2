@@ -1,0 +1,91 @@
+======================================================================
+ Tarea 3 - Inyección/modificación de tráfico AMQP con Scapy
+======================================================================
+ Broker AMQP objetivo: rabbit_server:5672
+
+[FUZZING 1] Content-Body con payload de tamaño variable
+  Enviado Content-Body de 100 bytes -> conexión cerrada por el servidor ([Errno 104] Connection reset by peer)
+  Enviado Content-Body de 500 bytes -> conexión cerrada por el servidor ([Errno 104] Connection reset by peer)
+  Enviado Content-Body de 1000 bytes -> conexión cerrada por el servidor ([Errno 104] Connection reset by peer)
+
+[FUZZING 2] Method frames con Class/Method ID aleatorios
+  Class=100 Method=74 -> conexión cerrada ([Errno 104] Connection reset by peer)
+  Class=105 Method=132 -> conexión cerrada ([Errno 104] Connection reset by peer)
+  Class=194 Method=169 -> conexión cerrada ([Errno 104] Connection reset by peer)
+  Class=228 Method=189 -> conexión cerrada ([Errno 104] Connection reset by peer)
+  Class=129 Method=146 -> conexión cerrada ([Errno 104] Connection reset by peer)
+
+[INFO] Pausa de recuperacion (3 s) antes de modificaciones...
+
+[MOD 1] Protocol-Header con versión inválida (AMQP 9.9.9)
+  Enviado: 414d515000090909
+  Respuesta del servidor: 414d515003010000
+  Fundamento: se espera que el servidor rechace la versión y responda con la versión que sí soporta (negociación defensiva), cerrando luego la conexión.
+
+[MOD 2] Frame Method malformado (class=255, method=255)
+  Fundamento: se espera Connection.Close por error de protocolo (command-invalid), ya que la combinación class/method no existe en la spec.
+  Hipótesis si no se observa: la respuesta puede ser un Connection.Close cuyo parser simplificado no decodifica como texto legible.
+  Conexión cerrada por el servidor durante MOD 2 ([Errno 104] Connection reset by peer)
+
+[MOD 3] Channel.Open con Channel ID inválido (9999)
+  Fundamento: se espera error de canal/conexión al exceder channel_max negociado.
+  Hipótesis si no se observa: el servidor puede cerrar el socket TCP abruptamente sin enviar un frame de error explícito.
+  Conexión cerrada por el servidor durante MOD 3 ([Errno 104] Connection reset by peer)
+
+[INFO] Pausa de recuperacion (3 s) antes de pruebas de repercusion...
+
+[REPERCUSIÓN] Flood de 50 conexiones TCP simultáneas
+  Conexiones exitosas: 50/50
+  Tiempo promedio: 0.29 ms (min 0.24 ms, max 0.66 ms)
+  Servicio post-flood responde en 1.59 ms
+
+[REPERCUSIÓN] 20 conexiones half-open (SYN sin completar AMQP)
+  Servicio responde a cliente legítimo en 1.32 ms con 20 half-opens activas
+
+[REPERCUSIÓN] Content-Body sobredimensionado (65544 bytes)
+  Conexión cerrada/gestionada por el servidor tras 3.00 s (protección vía frame_max negociado).
+
+[MÉTRICA 1] Latencia vs. Throughput
+  Latencia 0 ms -> Throughput: 96351.18 KB/s
+  Latencia 5 ms -> Throughput: 195.17 KB/s
+  Latencia 10 ms -> Throughput: 98.89 KB/s
+  Latencia 15 ms -> Throughput: 66.15 KB/s
+  Latencia 20 ms -> Throughput: 49.70 KB/s
+  Latencia 25 ms -> Throughput: 39.76 KB/s
+  Latencia 30 ms -> Throughput: 33.19 KB/s
+  Latencia 40 ms -> Throughput: 24.90 KB/s
+  Latencia 50 ms -> Throughput: 19.93 KB/s
+  Cota de desempeño estimada: latencia >= 5 ms
+  Trazas diagnósticas alrededor de la cota:
+  [01:00:55] [HANDSHAKE] Conectando a rabbit_server:5672 (timeout=5.0s)
+  [01:00:55] [HANDSHAKE] Enviando AMQP protocol header
+  [01:00:55] [HANDSHAKE] Esperando Connection.Start
+  [01:00:55] [HANDSHAKE] Received 531 bytes: 0100000000020b000a000a0009000001
+    - 0 ms: OK | etapa final: recv-connection-start
+  [01:00:55] [HANDSHAKE] Conectando a rabbit_server:5672 (timeout=5.0s)
+  [01:00:55] [HANDSHAKE] Aplicando delay previo al header: 5 ms
+  [01:00:55] [HANDSHAKE] Enviando AMQP protocol header
+  [01:00:55] [HANDSHAKE] Esperando 5 ms antes de leer Connection.Start
+  [01:00:55] [HANDSHAKE] Esperando Connection.Start
+  [01:00:55] [HANDSHAKE] Received 531 bytes: 0100000000020b000a000a0009000001
+    - 5 ms: OK | etapa final: recv-connection-start
+
+[MÉTRICA 2] Ancho de banda / Rate Limiting vs. Throughput
+  Límite de banda 10 KB/s -> Throughput: 9.98 KB/s | ratio=1.00 | OK
+  Límite de banda 20 KB/s -> Throughput: 19.93 KB/s | ratio=1.00 | OK
+  Límite de banda 50 KB/s -> Throughput: 49.60 KB/s | ratio=0.99 | OK
+  Límite de banda 100 KB/s -> Throughput: 98.64 KB/s | ratio=0.99 | OK
+  Límite de banda 200 KB/s -> Throughput: 195.76 KB/s | ratio=0.98 | OK
+  Límite de banda 500 KB/s -> Throughput: 474.05 KB/s | ratio=0.95 | OK
+  Límite de banda 1000 KB/s -> Throughput: 912.34 KB/s | ratio=0.91 | OK
+  Límite de banda 2000 KB/s -> Throughput: 1683.09 KB/s | ratio=0.84 | OK
+  Límite de banda 4096 KB/s -> Throughput: 2978.87 KB/s | ratio=0.73 | OK
+  Cota de desempeño estimada: ancho de banda >= 10 KB/s
+  No se detectó quiebre cualitativo con los puntos probados.
+
+[MÉTRICA] Gráfico guardado en /app/output/metricas_throughput.png
+Cota de desempeño latencia estimada: >= 5 ms
+Cota de desempeño ancho de banda estimada: >= 10 KB/s
+
+Finalizado.
+Resultados guardados en: /app/output/resultados_analisis.txt
