@@ -201,7 +201,6 @@ def trace_amqp_handshake(delay_ms: float = 0.0, socket_timeout: float = 5.0) -> 
 # 1) Fuzzing (2 inyecciones requeridas)
 # --------------------------------------------------------------------------- #
 def fuzzing_content_body_size():
-    """Fuzzing 1: Content-Body con tamaño de payload aleatorio, sin Publish previo válido."""
     print("\n[FUZZING 1] Content-Body con payload de tamaño variable")
     for size in (100, 500, 1000):
         try:
@@ -217,7 +216,6 @@ def fuzzing_content_body_size():
 
 
 def fuzzing_class_method_ids():
-    """Fuzzing 2: frames Method con Class ID / Method ID aleatorios (no válidos)."""
     print("\n[FUZZING 2] Method frames con Class/Method ID aleatorios")
     for _ in range(5):
         class_id = random.randint(50, 255)
@@ -237,7 +235,6 @@ def fuzzing_class_method_ids():
 # 2) Modificaciones de campos específicos del protocolo (3 requeridas)
 # --------------------------------------------------------------------------- #
 def modificacion_protocol_header_version():
-    """Modificación 1: Protocol-Header con versión de protocolo inexistente (9.9.9)."""
     print("\n[MOD 1] Protocol-Header con versión inválida (AMQP 9.9.9)")
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -256,7 +253,6 @@ def modificacion_protocol_header_version():
 
 
 def modificacion_method_frame_malformado():
-    """Modificación 2: Frame Method con class/method fuera de rango tras handshake válido."""
     print("\n[MOD 2] Frame Method malformado (class=255, method=255)")
     print("  Fundamento: se espera Connection.Close por error de protocolo "
           "(command-invalid), ya que la combinación class/method no existe en la spec.")
@@ -281,7 +277,6 @@ def modificacion_method_frame_malformado():
 
 
 def modificacion_channel_id_invalido():
-    """Modificación 3: Channel.Open con un Channel ID fuera del rango negociado."""
     print("\n[MOD 3] Channel.Open con Channel ID inválido (9999)")
     print("  Fundamento: se espera error de canal/conexión al exceder channel_max negociado.")
     print("  Hipótesis si no se observa: el servidor puede cerrar el socket TCP "

@@ -1,6 +1,6 @@
 # Tarea 2
 
-Repositorio para trabajar con un broker RabbitMQ en Docker, un cliente basado en `amqp-tools` y el script `tarea3.py` para pruebas con Scapy y mediciones de red.
+Repositorio para trabajar con un broker RabbitMQ en Docker, un cliente basado en `amqp-tools` y el script `tarea3.py` como punto de entrada actual para pruebas con Scapy y mediciones de red.
 
 ## Que incluye
 
