@@ -1,0 +1,14 @@
+======================================================================
+ Tarea 3 - Inyección/modificación de tráfico AMQP con Scapy
+======================================================================
+ Broker AMQP objetivo: 127.0.0.1:5672
+
+[FUZZING 1] Content-Body con payload de tamaño variable
+  Enviado Content-Body de 100 bytes -> conexión cerrada por el servidor ([WinError 10061] No connection could be made because the target machine actively refused it)
+  Enviado Content-Body de 500 bytes -> conexión cerrada por el servidor ([WinError 10061] No connection could be made because the target machine actively refused it)
+  Enviado Content-Body de 1000 bytes -> conexión cerrada por el servidor ([WinError 10061] No connection could be made because the target machine actively refused it)
+
+[FUZZING 2] Method frames con Class/Method ID aleatorios
+  Class=190 Method=186 -> conexión cerrada ([WinError 10061] No connection could be made because the target machine actively refused it)
+  Class=86 Method=121 -> conexión cerrada ([WinError 10061] No connection could be made because the target machine actively refused it)
+  Class=203 Method=161 -> conexión cerrada ([WinError 10061] No connection could be made because the target machine actively refused it)

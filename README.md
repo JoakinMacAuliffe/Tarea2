@@ -1,201 +1,98 @@
-# Tarea 2 — Análisis de Tráfico AMQP con Scapy
+# Tarea 2
 
-Análisis de un servicio de mensajería **RabbitMQ** (protocolo AMQP 0-9-1) mediante interceptación, inyección y modificación de tráfico de red utilizando **Scapy**.
+Repositorio para trabajar con un broker RabbitMQ en Docker, un cliente basado en `amqp-tools` y el script `tarea3.py` para pruebas con Scapy y mediciones de red.
 
-## Arquitectura
+## Que incluye
 
-```
-┌──────────────────┐         Puerto 5672          ┌──────────────────┐
-│   Cliente AMQP   │◄──────────────────────────►  │  RabbitMQ Server │
-│  (amqp-tools)    │     Protocolo AMQP 0-9-1     │  (Docker)        │
-│  Docker          │                              │  Docker          │
-└──────────────────┘                              └──────────────────┘
-                              ▲
-                              │ Interceptación
-                              │ Inyección
-                              │ Análisis
-                      ┌───────┴────────┐
-                      │ analisis_scapy │
-                      │    (Scapy)     │
-                      └────────────────┘
-```
+- `server/`: imagen Docker del servidor RabbitMQ con Management UI habilitada.
+- `client/`: imagen Docker con `amqp-tools` para publicar y consumir mensajes.
+- `tarea3.py`: script principal para inyeccion/modificacion de trafico AMQP y analisis de rendimiento.
+- `captura_amqp.pcapng`: captura incluida en el repo.
+- `resultados_analisis.txt`: salida registrada por el script.
+- `metricas_throughput.png`: grafico generado por el script.
 
-- **Servidor**: RabbitMQ ejecutándose en Docker, expuesto en `localhost:5672` (AMQP) y `localhost:15672` (Management UI).
-- **Cliente**: Contenedor Docker con `amqp-tools` para publicar y consumir mensajes.
-- **Script de análisis**: `analisis_scapy.py` — intercepta, inyecta y mide métricas del tráfico AMQP.
+## Requisitos
 
-## Requisitos previos
+- Docker Desktop en ejecucion.
+- Python 3.
+- Paquetes Python: `scapy` y `matplotlib`.
+- En Windows, ejecutar como administrador para que Scapy pueda usar sockets raw.
+- Si vas a capturar trafico en el sistema, Npcap puede ser necesario.
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y en ejecución.
-- Python 3 con Scapy instalado:
-  ```bash
-  pip install scapy
-  ```
-- [Npcap](https://npcap.com/) instalado (en Windows, necesario para que Scapy capture paquetes).
-- [Wireshark](https://www.wireshark.org/) (opcional, para verificación visual).
-
----
-
-## 1. Servidor RabbitMQ
-
-### Construir la imagen
+Instalacion de dependencias Python:
 
 ```bash
-cd server
-docker build -t amqp_server .
+pip install scapy matplotlib
 ```
 
-### Ejecutar el servidor
+## Servidor RabbitMQ
+
+Construye la imagen del servidor:
+
+```bash
+docker build -t amqp_server .\server
+```
+
+Ejecuta el contenedor:
 
 ```bash
 docker run -it --rm --name rabbit_server -p 5672:5672 -p 15672:15672 amqp_server
 ```
 
-| Puerto | Servicio |
-|--------|----------|
-| 5672   | AMQP 0-9-1 (comunicación cliente-servidor) |
-| 15672  | Management UI (interfaz web de administración) |
+Credenciales por defecto:
 
-**Credenciales**: `admin` / `1234`
-**Virtual Host**: `entorno_amqp`
+- Usuario: `admin`
+- Clave: `1234`
+- Virtual host: `entorno_amqp`
 
----
+Puertos expuestos:
 
-## 2. Cliente AMQP
+- `5672`: AMQP
+- `15672`: interfaz web de administracion
 
-### Construir la imagen
+## Cliente AMQP
+
+Construye la imagen del cliente:
 
 ```bash
-cd client
-docker build -t amqp_client .
+docker build -t amqp_client .\client
 ```
 
-### Ejecutar el cliente
-
-Abrir **dos terminales** y en cada una ejecutar:
+Abre un contenedor interactivo:
 
 ```bash
 docker run -it --rm amqp_client
 ```
 
-### Consumir mensajes (Terminal 1)
+Ejemplo de consumo:
 
 ```bash
 amqp-consume -u "amqp://admin:1234@host.docker.internal:5672/entorno_amqp" -q hello -d cat
 ```
 
-### Publicar mensajes (Terminal 2)
+Ejemplo de publicacion:
 
 ```bash
 amqp-publish -u "amqp://admin:1234@host.docker.internal:5672/entorno_amqp" -r hello -b "Hola Mundo"
 ```
 
----
+## Script `tarea3.py`
 
-## 3. Script de análisis con Scapy
+El script abre conexiones contra RabbitMQ, genera trafico AMQP malformado, mide respuestas del servicio y calcula metricas de latencia y throughput.
 
-El script `analisis_scapy.py` cumple los tres objetivos de la tarea a través de un menú interactivo.
-
-### Ejecución
-
-> **Requiere permisos de administrador** para capturar e inyectar paquetes.
+Ejecucion recomendada:
 
 ```bash
-sudo python analisis_scapy.py
+python .\tarea3.py
 ```
 
-### Menú de opciones
+Si tu entorno requiere privilegios elevados, ejecutalo como administrador.
 
-| Opción | Descripción |
-|--------|-------------|
-| 1 | Ejecutar TODO (Objetivos 1, 2 y 3 completos) |
-| 2 | Objetivo 1: Interceptar, inyectar y modificar tráfico |
-| 3 | Objetivo 2: Análisis de repercusiones |
-| 4 | Objetivo 3: Métricas de red y cotas de desempeño |
-| 5 | Solo captura de tráfico en vivo (15 segundos) |
-| 6 | Solo inyecciones (sin captura) |
-| 7 | Solo métricas de red |
-| 8 | Análisis de archivos PCAP existentes |
-| 0 | Salir |
+### Salidas
 
-### Objetivo 1 — Interceptar, inyectar y modificar tráfico
+- `resultados_analisis.txt`: registro completo de las pruebas.
+- `metricas_throughput.png`: grafico comparando las metricas calculadas.
 
-| Test | Qué hace |
-|------|----------|
-| Captura en vivo | Captura tráfico AMQP por 15s en la interfaz Loopback, decodifica frames (Method, Body, Heartbeat) y muestra contenido de mensajes. |
-| Inyección 1 | Envía un Protocol-Header con versión inválida (`AMQP 9.9.9.9`) para observar la negociación del servidor. |
-| Inyección 2 | Envía un frame Method con class/method inválidos (255/255) tras un handshake correcto. |
-| Inyección 3 | Envía datos aleatorios (16 B a 1 KB) al puerto AMQP para probar robustez. |
-| Inyección 4 | Craftea un paquete TCP completo con Scapy (SYN → handshake → payload AMQP malformado → RST). |
+## Notas
 
-### Objetivo 2 — Análisis de repercusiones
-
-| Test | Qué hace |
-|------|----------|
-| Flood de conexiones | Abre 50 conexiones TCP simultáneas y mide tiempos de conexión + estado del servicio post-flood. |
-| Half-open connections | Crea 20 handshakes AMQP sin completar para evaluar degradación del servicio. |
-| Payload sobredimensionado | Envía un frame de 64 KB para exceder el `frame_max` del servidor. |
-
-### Objetivo 3 — Métricas de red y cotas de desempeño
-
-| Métrica | Qué mide |
-|---------|----------|
-| Latencia TCP + AMQP | 20 muestras de tiempo de conexión TCP y handshake AMQP (promedio, mín, máx). |
-| Throughput TCP | Tasa de transferencia enviando bloques de 1 KB a 64 KB (KB/s, Mbps). |
-| ICMP Ping | Latencia base de red mediante Echo Request/Reply con Scapy. |
-| Parámetros TCP | Window Size, MSS, Window Scale extraídos del SYN-ACK del servidor. |
-| Fragmentación IP | Comportamiento del servidor ante paquetes IP fragmentados. |
-| Análisis PCAP | Parseo de `input.pcapng` y `output.pcapng` con estadísticas de métodos AMQP. |
-
-### Archivos de salida
-
-| Archivo | Contenido |
-|---------|-----------|
-| `resultados_analisis.txt` | Log completo con timestamps de todas las pruebas ejecutadas. |
-| `captura_amqp.pcapng` | Captura de paquetes AMQP (generada por la opción 5). |
-
----
-
-## 4. Verificación con Wireshark
-
-Para verificar visualmente el funcionamiento del script:
-
-1. Abrir **Wireshark como administrador**.
-2. Seleccionar la interfaz **Npcap Loopback Adapter**.
-3. Aplicar el filtro de captura:
-   ```
-   tcp port 5672
-   ```
-4. Ejecutar el script en otra terminal.
-
-### Filtros útiles
-
-| Filtro | Qué muestra |
-|--------|-------------|
-| `amqp` | Solo tráfico AMQP decodificado |
-| `tcp.port == 5672` | Todo el tráfico al puerto RabbitMQ |
-| `tcp.flags.syn == 1 && tcp.port == 5672` | Nuevas conexiones (SYN) |
-| `tcp.flags.reset == 1 && tcp.port == 5672` | Conexiones cortadas (RST) |
-| `tcp.port == 5672 && tcp.len > 0` | Solo paquetes con payload |
-| `icmp` | Pings del Objetivo 3 |
-| `ip.flags.mf == 1` | Paquetes IP fragmentados |
-
-> **Tip**: Clic derecho en un paquete → **Follow → TCP Stream** para ver el intercambio completo de cada inyección.
-
----
-
-## Estructura del proyecto
-
-```
-Tarea2/
-├── server/
-│   └── Dockerfile          # Imagen Docker de RabbitMQ
-├── client/
-│   └── Dockerfile          # Imagen Docker con amqp-tools
-├── analisis_scapy.py       # Script principal de análisis con Scapy
-├── input.pcapng            # Captura de tráfico AMQP (entrada)
-├── output.pcapng           # Captura de tráfico AMQP (salida)
-├── resultados_analisis.txt # Resultados generados por el script
-├── captura_amqp.pcapng     # Captura generada por la opción 5
-└── README.md
-```
+- El flujo principal de este repositorio es el que usan `server/Dockerfile`, `client/Dockerfile` y `tarea3.py`.
